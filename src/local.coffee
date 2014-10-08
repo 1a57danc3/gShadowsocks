@@ -1,22 +1,24 @@
-# Copyright (c) 2013 clowwindy
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+###
+  Copyright (c) 2014 clowwindy
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+###
 
 
 net = require("net")
@@ -26,27 +28,11 @@ udpRelay = require("./udprelay")
 utils = require('./utils')
 inet = require('./inet')
 Encryptor = require("./encrypt").Encryptor
-
-inetNtoa = (buf) ->
-  buf[0] + "." + buf[1] + "." + buf[2] + "." + buf[3]
-inetAton = (ipStr) ->
-  parts = ipStr.split(".")
-  unless parts.length is 4
-    null
-  else
-    buf = new Buffer(4)
-    i = 0
-
-    while i < 4
-      buf[i] = +parts[i]
-      i++
-    buf
-
 connections = 0
 
-createServer = (serverAddr, serverPort, port, key, method, timeout)->
+createServer = (serverAddr, serverPort, port, key, method, timeout, local_address='127.0.0.1') ->
   
-  udpServer = udpRelay.createServer(null, port, serverAddr, serverPort, key, method, timeout, true)
+  udpServer = udpRelay.createServer(local_address, port, serverAddr, serverPort, key, method, timeout, true)
   
   getServer = ->
     aPort = serverPort
@@ -67,11 +53,11 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
      
   server = net.createServer((connection) ->
     connections += 1
+    connected = true
     encryptor = new Encryptor(key, method)
     stage = 0
     headerLength = 0
     remote = null
-    cachedPieces = []
     addrLen = 0
     remoteAddr = null
     remotePort = null
@@ -90,7 +76,7 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
       if stage is 5
         # pipe sockets
         data = encryptor.encrypt data
-        connection.pause()  unless remote.write(data)
+        connection.pause() unless remote.write(data)
         return
       if stage is 0
         tempBuf = new Buffer(2)
@@ -118,7 +104,7 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
             reply = new Buffer(10)
             reply.write "\u0005\u0000\u0000\u0001", 0, 4, "binary"
             utils.debug connection.localAddress
-            inetAton(connection.localAddress).copy reply, 4
+            utils.inetAton(connection.localAddress).copy reply, 4
             reply.writeUInt16BE connection.localPort, 8
             connection.write reply
             stage = 10
@@ -136,7 +122,7 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
           addrToSend = data.slice(3, 4).toString("binary")
           # read address and port
           if addrtype is 1
-            remoteAddr = inetNtoa(data.slice(4, 8))
+            remoteAddr = utils.inetNtoa(data.slice(4, 8))
             addrToSend += data.slice(4, 10).toString("binary")
             remotePort = data.readUInt16BE(8)
             headerLength = 10
@@ -163,24 +149,12 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
           [aServer, aPort] = getServer()
           utils.info "connecting #{aServer}:#{aPort}"
           remote = net.connect(aPort, aServer, ->
-            if not encryptor
-              remote.destroy() if remote
-              return
-            addrToSendBuf = new Buffer(addrToSend, "binary")
-            addrToSendBuf = encryptor.encrypt addrToSendBuf
-            remote.write addrToSendBuf
-            i = 0
-  
-            while i < cachedPieces.length
-              piece = cachedPieces[i]
-              piece = encryptor.encrypt piece
-              remote.write piece
-              i++
-            cachedPieces = null # save memory
+            remote.setNoDelay true if remote
             stage = 5
             utils.debug "stage = 5"
           )
           remote.on "data", (data) ->
+            return if !connected     # returns when connection disconnected
             utils.log utils.EVERYTHING, "remote on data"
             try
               if encryptor
@@ -216,12 +190,17 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
             utils.debug "remote on timeout"
             remote.destroy() if remote
             connection.destroy() if connection
-  
+
+          addrToSendBuf = new Buffer(addrToSend, "binary")
+          addrToSendBuf = encryptor.encrypt addrToSendBuf
+          remote.setNoDelay false
+          remote.write addrToSendBuf 
+          
           if data.length > headerLength
             buf = new Buffer(data.length - headerLength)
             data.copy buf, 0, headerLength
-            cachedPieces.push buf
-            buf = null
+            piece = encryptor.encrypt buf
+            remote.write piece
           stage = 4
           utils.debug "stage = 4"
         catch e
@@ -229,12 +208,17 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
           utils.error e
           connection.destroy() if connection
           remote.destroy() if remote
-      else cachedPieces.push data  if stage is 4
-        # remote server not connected
-        # cache received buffers
-        # make sure no data is lost
+          clean()
+      else if stage is 4
+        if not remote?
+          connection.destroy() if connection
+          return
+        data = encryptor.encrypt data
+        remote.setNoDelay true
+        connection.pause() unless remote.write(data)
   
     connection.on "end", ->
+      connected = false
       utils.debug "connection on end"
       remote.end()  if remote
   
@@ -243,6 +227,7 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
       utils.error "local error: #{e}"
 
     connection.on "close", (had_error)->
+      connected = false
       utils.debug "connection on close:#{had_error}"
       if had_error
         remote.destroy() if remote
@@ -260,8 +245,12 @@ createServer = (serverAddr, serverPort, port, key, method, timeout)->
       remote.destroy() if remote
       connection.destroy() if connection
   )
-  server.listen port, ->
-    utils.info "local listening at port " + port
+  if local_address?
+    server.listen port, local_address, ->
+      utils.info "local listening at #{server.address().address}:#{port}"
+  else
+    server.listen port, ->
+      utils.info "local listening at 0.0.0.0:" + port
   
   server.on "error", (e) ->
     if e.code is "EADDRINUSE"
@@ -290,7 +279,11 @@ exports.main = ->
   if configPath
     utils.info 'loading config from ' + configPath
     configContent = fs.readFileSync(configPath)
-    config = JSON.parse(configContent)
+    try
+      config = JSON.parse(configContent)
+    catch e
+      utils.error('found an error in config.json: ' + e.message)
+      process.exit 1
   else
     config = {}
   for k, v of configFromArgs
@@ -305,11 +298,12 @@ exports.main = ->
   PORT = config.local_port
   KEY = config.password
   METHOD = config.method
+  local_address = config.local_address
   if not (SERVER and REMOTE_PORT and PORT and KEY)
     utils.warn 'config.json not found, you have to specify all config in commandline'
     process.exit 1
   timeout = Math.floor(config.timeout * 1000) or 600000
-  s = createServer SERVER, REMOTE_PORT, PORT, KEY, METHOD, timeout
+  s = createServer SERVER, REMOTE_PORT, PORT, KEY, METHOD, timeout, local_address
   s.on "error", (e) ->
     process.stdout.on 'drain', ->
       process.exit 1

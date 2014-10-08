@@ -1,3 +1,38 @@
+1.5.0 2014-09-09
+- Add RC4-MD5 encryption
+
+1.4.14 2014-07-04
+- Fix UDP header length detection
+
+1.4.13 2014-06-12
+- Better logging
+- Extract the 2 function inetNtoa and inetAton to utils
+
+1.4.12 2014-04-23
+- Support -t timeout
+- Fix a potential memory leak during server connect()
+- Fix remote value not checked before setNoDelay()
+
+1.4.11 2014-04-18
+- Lower local latency
+- Fix a typo in help
+
+1.4.8 2014-04-12
+- Fix can not bind two or more IPs
+
+1.4.6 2014-04-10
+- Fix a typo in help
+
+1.4.5 2014-04-07
+- Add help
+
+1.4.4 2014-03-25
+- Support local address binding with -b argument
+
+1.4.3 2014-02-17
+- Fix bug with ipv6 proxy in utorrent
+- Better error message with bad config.json format and wrong password
+
 1.4.2 2013-10-29
 - Client now support multiple server ports and multiple server/port pairs. See test/config-client-*.json for example
 

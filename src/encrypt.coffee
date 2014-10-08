@@ -1,22 +1,24 @@
-# Copyright (c) 2013 clowwindy
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+###
+  Copyright (c) 2014 clowwindy
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+###
 
 crypto = require("crypto")
 util = require("util")
@@ -64,12 +66,6 @@ substitute = (table, buf) ->
     i++
   buf
 
-to_buffer = (input) ->
-  if input.copy?
-    return input
-  else
-    return new Buffer(input, 'binary')
-
 bytes_to_key_results = {}
 
 EVP_BytesToKey = (password, key_len, iv_len) ->
@@ -84,7 +80,7 @@ EVP_BytesToKey = (password, key_len, iv_len) ->
     if i > 0
       data = Buffer.concat([m[i - 1], password])
     md5.update(data)
-    d = to_buffer md5.digest()
+    d = md5.digest()
     m.push(d)
     count += d.length
     i += 1
@@ -108,7 +104,19 @@ method_supported =
   'idea-cfb': [16, 8]
   'rc2-cfb': [16, 8]
   'rc4': [16, 0]
+  'rc4-md5': [16, 16]
   'seed-cfb': [16, 16]
+
+
+create_rc4_md5_cipher = (key, iv, op) ->
+  md5 = crypto.createHash('md5')
+  md5.update(key)
+  md5.update(iv)
+  rc4_key = md5.digest()
+  if op == 1
+    return crypto.createCipheriv('rc4', rc4_key, '')
+  else
+    return crypto.createDecipheriv('rc4', rc4_key, '')
 
 
 class Encryptor
@@ -128,7 +136,7 @@ class Encryptor
 
   get_cipher: (password, method, op, iv) ->
     method = method.toLowerCase()
-    password = Buffer(password, 'binary')
+    password = new Buffer(password, 'binary')
     m = @get_cipher_len(method)
     if m?
       [key, iv_] = EVP_BytesToKey(password, m[0], m[1])
@@ -137,14 +145,17 @@ class Encryptor
       if op == 1
         @cipher_iv = iv.slice(0, m[1])
       iv = iv.slice(0, m[1])
-      if op == 1
-        return crypto.createCipheriv(method, key, iv)
+      if method == 'rc4-md5'
+        return create_rc4_md5_cipher(key, iv, op)
       else
-        return crypto.createDecipheriv(method, key, iv)
+        if op == 1
+          return crypto.createCipheriv(method, key, iv)
+        else
+          return crypto.createDecipheriv(method, key, iv)
 
   encrypt: (buf) ->
     if @method?
-      result = to_buffer @cipher.update(buf.toString('binary'))
+      result = @cipher.update buf
       if @iv_sent
         return result
       else
@@ -159,10 +170,10 @@ class Encryptor
         decipher_iv_len = @get_cipher_len(@method)[1]
         decipher_iv = buf.slice(0, decipher_iv_len) 
         @decipher = @get_cipher(@key, @method, 0, decipher_iv)
-        result = to_buffer @decipher.update(buf.slice(decipher_iv_len).toString('binary'))
+        result = @decipher.update(buf.slice(decipher_iv_len))
         return result
       else
-        result = to_buffer @decipher.update(buf.toString('binary'))
+        result = @decipher.update(buf)
         return result
     else
       substitute @decryptTable, buf
@@ -188,10 +199,13 @@ encryptAll = (password, method, op, data) ->
     else
       iv = data.slice 0, ivLen
       data = data.slice ivLen
-    if op == 1
-      cipher = crypto.createCipheriv(method, key, iv)
+    if method == 'rc4-md5'
+      cipher = create_rc4_md5_cipher(key, iv, op)
     else
-      cipher = crypto.createDecipheriv(method, key, iv)
+      if op == 1
+        cipher = crypto.createCipheriv(method, key, iv)
+      else
+        cipher = crypto.createDecipheriv(method, key, iv)
     result.push cipher.update(data)
     result.push cipher.final()
     return Buffer.concat result
