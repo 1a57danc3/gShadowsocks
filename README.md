@@ -18,7 +18,7 @@ Download the lastest Node stable release. You can find them [here](http://nodejs
 Node source code from Github! It's not stable.
 
 Run
-    
+
     npm install -g shadowsocks
 
 Create a file named `config.json`, with the following content.
@@ -82,3 +82,10 @@ Please visit [issue tracker](https://github.com/clowwindy/shadowsocks-nodejs/iss
 Mailing list: http://groups.google.com/group/shadowsocks
 
 Also see [troubleshooting](https://github.com/clowwindy/shadowsocks/wiki/Troubleshooting)
+
+
+
+
+Lancher:goagent-taskbar https://github.com/goagent/taskbar
+
+Jingyun.org    Copyleft 2014
