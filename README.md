@@ -1,27 +1,21 @@
-shadowsocks-nodejs
+gShadowsocks客户端
 ===========
 
-Current version: 1.5.0
+当前版本: 1.5.0
 [![Build Status](https://travis-ci.org/clowwindy/shadowsocks-nodejs.png)](https://travis-ci.org/clowwindy/shadowsocks-nodejs)
 
-shadowsocks-nodejs is a lightweight tunnel proxy which can help you get through
- firewalls. It is a port of [shadowsocks](https://github.com/clowwindy/shadowsocks).
+gShadowsocks是一个可以带你穿过防火墙的轻量代理软件 基于nodejs版本的  [shadowsocks](https://github.com/clowwindy/shadowsocks).
 
-Both TCP CONNECT and UDP ASSOCIATE are implemented.
+TCP和UDP都是可以实现的
 
-Other ports and clients can be found [here](https://github.com/clowwindy/shadowsocks/wiki/Ports-and-Clients).
+其他平台shadowsocks的客户端可以在 [这里](https://github.com/clowwindy/shadowsocks/wiki/Ports-and-Clients) 找到.
 
-Usage
+客户端使用方法
 -----------
 
-Download the lastest Node stable release. You can find them [here](http://nodejs.org/). Don't just use master branch of
-Node source code from Github! It's not stable.
+下载最新的gShadowsocks
 
-Run
-
-    npm install -g shadowsocks
-
-Create a file named `config.json`, with the following content.
+修改 `config.json` 这个文件 （Windows下面最好使用notepad++修改，使用系统自带文本编辑器可能会丢失格式）
 
     {
         "server":"my_server_ip",
@@ -32,27 +26,31 @@ Create a file named `config.json`, with the following content.
         "method":"table"
     }
 
-Explaination of the fields:
+参数字段说明:
 
-    server          your server IP (IPv4/IPv6), notice that your server will listen to this IP
-    server_port     server port
-    local_port      local port
-    password        a password used to encrypt transfer
-    timeout         in seconds
-    method          encryption method, "bf-cfb", "aes-256-cfb", "des-cfb", "rc4", etc. Default is table
+    server          你的服务器IP (IPv4/IPv6), 注意 这是服务器的外网独立IP
+    server_port     服务器监听端口
+    local_port      本地监听端口
+    password        你所设置的密码
+    timeout         超时时间设置
+    method          加密方式 如： "bf-cfb", "aes-256-cfb", "des-cfb", "rc4", 等等. 默认是 table
 
-`cd` into the directory of `config.json`. Run `ssserver` on your server. To run it in the background, run
-`nohup ssserver > log &`.
 
-On your client machine, run `sslocal`.
+修改配置文件完成后 运行`gShadowsocks.exe`.
 
-Change the proxy setting in your browser into
+然后改变您的浏览器代理端口 详见http://ippotsuko.lofter.com/post/15c52d_156fc15
 
     protocol: socks5
     hostname: 127.0.0.1
     port:     your local_port
 
-Advanced
+
+服务器端使用说明：
+
+打开根目录修改 `config.json`. 然后在你拥有公网独立IP的服务器上运行 `gShadowsocksserver.exe`
+
+
+进阶使用 懒得翻译了自己看吧
 ------------
 
 You can use args to override settings from `config.json`.
@@ -63,21 +61,21 @@ You can use args to override settings from `config.json`.
 
 Example of multi-user server support can be found in `test/config-multi-passwd.json`.
 
-Developing
+开发
 -----------------------------
 
-You can build coffee source code and test it:
+你可以构建 coffee source 代码以及测试:
 
     npm install -g coffee-script
     cake build test
 
-License
+许可开源协议License
 -----------------
 MIT
 
-Bugs and Issues
+错误和问题
 ----------------
-Please visit [issue tracker](https://github.com/clowwindy/shadowsocks-nodejs/issues?state=open)
+请访问 [issue tracker](https://github.com/clowwindy/shadowsocks-nodejs/issues?state=open)
 
 Mailing list: http://groups.google.com/group/shadowsocks
 
@@ -85,7 +83,11 @@ Also see [troubleshooting](https://github.com/clowwindy/shadowsocks/wiki/Trouble
 
 
 
+启动器来自:goagent-taskbar https://github.com/goagent/taskbar
 
-Lancher:goagent-taskbar https://github.com/goagent/taskbar
+购买高速shadowsocks服务  尽在静云 Jingyun.org    Copyleft 2014
 
-Jingyun.org    Copyleft 2014
+使用静云，即可在中国的各个角落，尽情享受自由的网络世界
+无论是电脑还是手机，也不管是Wi-Fi或是移动网络
+
+静云都能始终伴随你左右。
