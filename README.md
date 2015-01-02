@@ -4,7 +4,7 @@ gShadowsocks客户端
 当前版本: 1.5.0
 [![Build Status](https://travis-ci.org/clowwindy/shadowsocks-nodejs.png)](https://travis-ci.org/clowwindy/shadowsocks-nodejs)
 
-gShadowsocks是一个可以带你穿过防火墙的轻量代理软件 基于nodejs版本的  [shadowsocks](https://github.com/clowwindy/shadowsocks).
+gShadowsocks是一个可以带你穿过防火墙的轻量代理软件 基于nodejs版本的  [shadowsocks](https://github.com/shadowsocks/shadowsocks-nodejs).
 
 TCP和UDP都是可以实现的
 
