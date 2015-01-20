@@ -84,10 +84,3 @@ Also see [troubleshooting](https://github.com/clowwindy/shadowsocks/wiki/Trouble
 
 
 启动器来自:goagent-taskbar https://github.com/goagent/taskbar
-
-购买高速shadowsocks服务  尽在静云 Jingyun.org    Copyleft 2014
-
-使用静云，即可在中国的各个角落，尽情享受自由的网络世界
-无论是电脑还是手机，也不管是Wi-Fi或是移动网络
-
-静云都能始终伴随你左右。
