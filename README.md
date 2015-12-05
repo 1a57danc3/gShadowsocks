@@ -1,14 +1,14 @@
-gShadowsocks客戶端
+gShadowsocks客戶端 基於shadowsocks-nodejs 和 goagent-taskbar
 ===========
 
-當前版本: 1.5.0
-[![Build Status](https://travis-ci.org/clowwindy/shadowsocks-nodejs.png)](https://travis-ci.org/clowwindy/shadowsocks-nodejs)
+當前版本: 1.5.3
 
-gShadowsocks是一個可以帶你穿過防火牆的輕量代理軟件 基於nodejs版本的  [shadowsocks](https://github.com/shadowsocks/shadowsocks-nodejs).
+gShadowsocks 是一個可以帶你穿過防火牆的輕量代理軟件 基於nodejs版本的  [shadowsocks](https://github.com/shadowsocks/shadowsocks-nodejs).
 
 TCP和UDP都是可以實現的
 
-其他平臺shadowsocks的客戶端可以在 [這裏](https://github.com/clowwindy/shadowsocks/wiki/Ports-and-Clients) 找到.
+**本項目不再更新; 請使用 [其他版本](https://github.com/clowwindy/shadowsocks/wiki/Ports-and-Clients).**
+
 
 客戶端使用方法
 -----------
@@ -84,3 +84,64 @@ Also see [troubleshooting](https://github.com/clowwindy/shadowsocks/wiki/Trouble
 
 
 啓動器來自:goagent-taskbar https://github.com/goagent/taskbar
+
+下載 https://github.com/goagent/taskbar/archive/master.zip
+然後用 vc6 打開 taskbar.dsw, 點"編譯"得到 taskbar.exe
+此時的 taskbar.exe 是 cmd.exe 的一個外殼
+用 reshack/exesope 修改 taskbar.exe 的圖標資源和字符串資源就能得到自定義的任意 console 程序的外殼了
+比如 goagent.exe
+
+更多**程式可以見 https://github.com/fqtools
+
+----------
+
+gShadowsocks based on shadowsocks-nodejs and goagent-taskbar
+==================
+
+shadowsocks-nodejs
+
+[![NPM version]][NPM] [![Build Status]][Travis CI]
+
+shadowsocks-nodejs is a node.js port of [shadowsocks].
+
+**Deprecated; please use [Other versions].**
+
+Many people are asking why. Here's why.
+
+- https://github.com/clowwindy/shadowsocks-nodejs/issues/35
+- https://github.com/joyent/node/issues/5949
+
+The GC of node.js sucks.
+
+Python version [handles 5000 connections with 50MB RAM](https://github.com/clowwindy/shadowsocks/wiki/Optimizing-Shadowsocks) while node.js version
+handles 100 connections with 300MB RAM. Why should we continue to support
+node.js?
+
+
+[Build Status]:    https://img.shields.io/travis/clowwindy/shadowsocks-nodejs/master.svg?style=flat
+[NPM]:             https://www.npmjs.org/package/shadowsocks
+[NPM version]:     https://img.shields.io/npm/v/shadowsocks.svg?style=flatp
+[Travis CI]:       https://travis-ci.org/clowwindy/shadowsocks-nodejs
+[shadowsocks]:     https://github.com/clowwindy/shadowsocks
+[Other versions]:  https://github.com/clowwindy/shadowsocks/wiki/Ports-and-Clients
+
+MIT License and Thx for anthor clowwindy
+-------
+goagent-taskbar
+
+Download https://github.com/goagent/taskbar/archive/master.zip
+
+Open taskbar.dsw with vc6/visual studio , run and build it that you can get taskbar.exe
+
+taskbar.exe is one of the shell of cmd.exe now
+
+You can use reshack/exesope to edit 'icon' or 'string' resource of taskbar.exe and you can get any shell of console
+
+such as goagent.exe
+
+No License and Thx for anthor phuslu
+
+
+------
+
+More Anti-Gre@tFirewall Tools on https://github.com/fqtools
