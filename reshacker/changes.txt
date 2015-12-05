@@ -1,0 +1,20 @@
+Changes in 4.2.5
+  Bugfix: Compiling Delphi form resources was buggy.
+  Bugfix: Adding a resource to a file without any resources was broken
+  New: Can now change a text resource's format (unicode, UTF-8, ANSI)
+Changes in 4.2.4
+  Bugfix: Error when compiling ansi encoded *.rc files 
+	Bugfix: RCDATA resources not displayed in their optimal format
+	Bugfix: Error when trying to display 'compressed' resources
+	Bugfix: 'Compressed' files can no longer be modified and saved
+Changes in 4.2.3
+  Bugfix: Significant bug in the recompiler
+  Bugfix: Minor bug displaying animated cursors
+Changes in 4.2.2
+  Bugfix: Some monochrome images weren't being displayed
+  Bugfix: Removed extraneous button in "Import Resources" dialog
+  Bugfix: Manifest resources were being converted to UCS-2 format.
+  Modified: Increased font sizes in all dialogs
+Changes in 4.2.1 (from 4.2.0)
+  Bugfix: occasional Delphi form was not being decompiled
+  Bugfix: hiding the toolbar disabled hide/show dialogs/menus.
